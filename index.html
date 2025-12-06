@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/lib/bootstrap-5.2.3-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/lib/fontawesome-free-6.5.1-web/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Js Mini Project</title>
+</head>
+<body>
+    <div class="modal fade" id="modalOpen" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTitleId">
+                        <i class="fa fa-plus"></i> Add Product
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="divError">
+
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="txtName" placeholder="" />
+                        <label for="txtName">Enter Product Name</label>
+                        
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="number" class="form-control" id="numPrice" placeholder="" />
+                        <label for="numPrice">Enter Product Price</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="number" class="form-control" id="numGst" placeholder="" />
+                        <label for="numGst">GST Rate(%)</label>
+                    </div>
+                    <!-- <div class="form-floating mb-3">
+                        <input type="number" class="form-control" id="numTotal" placeholder="" />
+                        <label for="numTotal">Total Price</label>
+                    </div> -->
+                    <div class="row">
+                        <button id="btnSave" type="button" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <main class="container-fluid my-3">
+        <div class="row mx-2 my-3">
+            <div class="col-6">
+                <div class="d-grid gap-2">
+                    <button
+                        type="button"
+                        name=""
+                        id="    "
+                        class="btn btn-primary"
+                        data-bs-target="#modalOpen"
+                        data-bs-toggle="modal"
+                    ><i class="fa fa-circle-plus"></i>
+                        Add Product
+                    </button>
+                </div>
+                
+                
+            </div>
+                <div class="col-6">
+                
+                        <div class="input-group">
+                            <input class="form-control form-control-md" type="search" placeholder="Search">
+                            <button class="btn btn-primary px-3" type="submit">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                </div>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr class="bg-primary text-white row mx-3">
+                    <th class="col">Product List</th>
+                </tr>
+                <tr class="row mx-3 text-default">
+                    <th class="col">Product Name</th>
+                    <th class="col">Price</th>
+                    <th class="col">GST Rate(%)</th>
+                    <th class="col">Total Price</th>
+                    <th class="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="contactsTBody">
+            </tbody>
+        </table>
+        </div>
+    </main>
+
+
+
+
+
+
+
+    <script src="/lib/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const products = [];
+    let editIndex = null;
+
+    addEventListener("load", function () {
+            loadData();
+        });
+
+    const btnSave = document.querySelector("#btnSave");
+    const divError = document.querySelector("#divError");
+    const tblBody = document.querySelector("#contactsTBody");
+
+    btnSave.addEventListener("click", function () {
+        const eltName = document.querySelector("#txtName");
+        const eltPrice = document.querySelector("#numPrice");
+        const eltGst = document.querySelector("#numGst");
+
+        const name = eltName.value.trim();
+        const price = parseFloat(eltPrice.value);
+        const gst = parseFloat(eltGst.value);
+
+        if (!name || isNaN(price) || price <= 0 || isNaN(gst) || gst < 0) {
+            divError.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <strong><i class="fa fa-times-circle"></i> Error!</strong> Please provide valid inputs.
+                </div>`;
+            return;
+        }
+
+        const totalPrice = price + (price * gst / 100);
+
+        if (editIndex === null) {
+            
+            products.push({ ProductName: name, Price: price, GST: gst, TotalPrice: totalPrice });
+        } else {
+            
+            products[editIndex] = { ProductName: name, Price: price, GST: gst, TotalPrice: totalPrice };
+            editIndex = null;
+        }
+
+        divError.innerHTML = "";
+        eltName.value = "";
+        eltPrice.value = "";
+        eltGst.value = "";
+        eltName.focus();
+        loadData();
+    });
+
+    function loadData() {
+        tblBody.innerHTML = "";
+        products.forEach((product, index) => {
+            const row = `
+                <tr class="row mx-3">
+                    <td class="col">${product.ProductName}</td>
+                    <td class="col">${product.Price.toFixed(2)}</td>
+                    <td class="col">${product.GST.toFixed(2)}</td>
+                    <td class="col">${product.TotalPrice.toFixed(2)}</td>
+                    <td class="col">
+                        <button type="button" class="btn btn-success btn-sm btn-edit" data-index="${index}" data-bs-toggle="modal" data-bs-target="#modalOpen"><i class="fa fa-edit"></i></button>
+                        <button type="button" class="btn btn-danger btn-sm btn-delete" data-index="${index}"><i class="fa fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            tblBody.innerHTML += row;
+        });
+
+        document.querySelectorAll(".btn-delete").forEach((btn) =>
+            btn.addEventListener("click", deleteProduct)
+        );
+        document.querySelectorAll(".btn-edit").forEach((btn) =>
+            btn.addEventListener("click", editProduct)
+        );
+    }
+
+    function deleteProduct(event) {
+        const index = event.target.closest("button").dataset.index;
+        products.splice(index, 1);
+        loadData();
+    }
+
+    function editProduct(event) {
+        const index = event.target.closest("button").dataset.index;
+        editIndex = index;
+
+        const product = products[index];
+        document.querySelector("#txtName").value = product.ProductName;
+        document.querySelector("#numPrice").value = product.Price;
+        document.querySelector("#numGst").value = product.GST;
+    }
+});
+
+
+    </script>
+</body>
+</html>
